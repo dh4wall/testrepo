@@ -1,0 +1,37 @@
+-- Main Library table
+CREATE TABLE Library (
+    BookID INT PRIMARY KEY,
+    Title VARCHAR(100),
+    Author VARCHAR(100),
+    Price DECIMAL(8,2)
+);
+
+-- Audit table to keep old values
+CREATE TABLE Library_Audit (
+    AuditID INT AUTO_INCREMENT PRIMARY KEY,
+    ActionType VARCHAR(10),   -- UPDATE / DELETE
+    BookID INT,
+    Title VARCHAR(100),
+    Author VARCHAR(100),
+    Price DECIMAL(8,2),
+);
+
+DELIMITER //
+CREATE TRIGGER before_library_update
+BEFORE UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (ActionType, BookID, Title, Author, Price)
+    VALUES ('UPDATE', OLD.BookID, OLD.Title, OLD.Author, OLD.Price);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER before_library_delete
+BEFORE DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (ActionType, BookID, Title, Author, Price)
+    VALUES ('DELETE', OLD.BookID, OLD.Title, OLD.Author, OLD.Price);
+END //
+DELIMITER ;
