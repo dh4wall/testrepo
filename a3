@@ -1,0 +1,61 @@
+select * from Employee natural join Dept;
+
+select e.Emp_fname, e.Emp_position, d.Dept_location, e.Emp_JoinDate from Employee e join Dept d on
+e.Dept_id = d.Dept_id;
+
+select e1.Emp_fname, e1.Emp_position, d.Dept_location, e1.Emp_JoinDate from Employee e1
+join Employee e2 on e1.Dept_id = e2.Dept_id and e1.Emp_id != e2.Emp_idjoin Dept d on e1.Dept_id =
+d.Dept_id;
+
+select e.*, p.Project_id, p.Proj_cost from Employee e join Project p on e.Dept_id = p.Dept_id
+where p.Proj_Location != 'hyderabad';
+
+select e.*, p.Project_id, p.Proj_cost from Employee e left join Project p on e.Dept_id = p.Dept_id
+where p.Proj_Location != 'hyderabad';
+
+select d.Dept_name, e.Emp_fname, e.Emp_position from Employee e join Dept d on e.Dept_id =
+d.Dept_id join Project p on d.Dept_id = p.Dept_id where year(p.Proj_date) = 2005;
+
+select d.Dept_name, e.Emp_fname, e.Emp_position from Project p right join Dept d on p.Dept_id =
+d.Dept_id right join Employee e on d.Dept_id = e.Dept_id where year(p.Proj_date) = 2005;
+
+select e.Emp_position, d.Dept_name from Employee e join Dept d on e.Dept_id = d.Dept_id
+join Project p on d.Dept_id = p.Dept_id where p.Proj_cost > 300000;
+
+select e.Emp_position, d.Dept_name from Employee e inner join Dept d on e.Dept_id = d.Dept_id inner
+join Project p on d.Dept_id = p.Dept_id where p.Proj_cost > 300000;
+
+select Proj_Name from Project where year(Proj_date) = 2006;
+
+select d.Dept_name from Dept d
+join Employee e on d.Dept_id = e.Dept_id group by d.Dept_name having count(e.Emp_id) = 2;
+
+select count(distinct e.Emp_id) as total_employees from Employee e
+join Project p on e.Dept_id = p.Dept_id where year(e.Emp_JoinDate) < 2009;
+
+create view emp_dept_view as select e.Emp_id, e.Emp_fname, e.Emp_lname, e.Emp_position,
+e.Emp_salary, e.Emp_JoinDate, d.Dept_name, d.Dept_location from Employee e join Dept d on
+e.Dept_id = d.Dept_id where e.Emp_salary > 70000;
+
+select * from emp_dept_view;
+
+create view simple_emp_view as select Emp_id, Emp_fname, Emp_salary from Employee where
+Emp_salary < 70000;
+
+select * from simple_emp_view;
+
+insert into simple_emp_view values (11, 'amit', 60000);
+
+select * from simple_emp_view;
+
+update simple_emp_view set Emp_salary = 63000 where Emp_id = 11;
+
+select * from simple_emp_view;
+
+delete from simple_emp_view where Emp_id = 11;
+
+select * from simple_emp_view;
+
+drop view simple_emp_view;
+
+select * from simple_emp_view;

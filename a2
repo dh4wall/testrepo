@@ -1,0 +1,78 @@
+-- Dept Table Queries
+create table Dept (Dept_id int not null primary key, Dept_name varchar(50) not null, Dept_location
+varchar(50) not null);
+insert into Dept values (1, 'computer', 'bangalore');
+insert into Dept values (2, 'it', 'hyderabad');
+insert into Dept values (3, 'finance', 'mumbai');
+insert into Dept values (4, 'hr', 'delhi');
+insert into Dept values (5, 'marketing', 'chennai');
+insert into Dept values (6, 'sales', 'pune');
+insert into Dept values (7, 'operations', 'kolkata');
+insert into Dept values (8, 'research', 'ahmedabad');
+insert into Dept values (9, 'support', 'jaipur');
+insert into Dept values (10, 'admin', 'lucknow');
+
+-- Employee Table Queries
+create table Employee (Emp_id int primary key, Dept_id int not null, Emp_fname varchar(50) not null,
+Emp_lname varchar(50), Emp_position varchar(50) not null,Emp_salary float not null,Emp_JoinDate
+date ,foreign key(Dept_id) references Dept(Dept_id) on delete cascade);
+insert into Employee values (1, 1, 'pranav', 'Sharma', 'software engineer', 66000, '1980-03-15');
+insert into Employee values (2, 1, 'harsh', 'Patel', 'system analyst', 65000, '1990-05-20');
+insert into Employee values (3, 2, 'pallavi', 'Reddy', 'database admin', 77000, '1975-11-30');
+insert into Employee values (4, 2, 'himanshu', 'Gupta', 'network engineer', 62000, '1988-01-10');
+insert into Employee values (5, 3, 'rahul', 'Singh', 'accountant', 55000, '1995-07-05');
+insert into Employee values (6, 4, 'pooja', 'Kaur', 'hr manager', 63800, '1970-12-01');
+insert into Employee values (7, 5, 'hitesh', 'Mehta', 'marketing lead', 67100, '1982-09-15');
+insert into Employee values (8, 6, 'parth', 'Nair', 'sales executive', 52000, '2000-06-18');
+insert into Employee values (9, 7, 'priya', 'Chatterjee', 'operations manager', 77000, '1983-08-22');
+insert into Employee values (10, 8, 'harini', 'Joshi', 'research scientist', 72000, '1992-04-30');
+
+-- Project Table Queries
+create table Project (Project_id int primary key, Dept_id int not null, Proj_Name varchar(50) not null,
+Proj_Location varchar(50) not null, Proj_cost float not null, Proj_date date not null, foreign key (Dept_id)
+references Dept(Dept_id) on delete cascade);
+insert into Project values (1, 1, 'erp development', 'bangalore', 450000, '2004-01-01');
+insert into Project values (2, 2, 'cloud migration', 'hyderabad', 320000, '2005-01-01');
+insert into Project values (3, 3, 'audit process', 'mumbai', 200000, '2006-01-01');
+insert into Project values (4, 4, 'employee training', 'delhi', 150000, '2007-01-01');
+insert into Project values (5, 5, 'digital marketing', 'chennai', 500000, '2005-01-01');
+insert into Project values (6, 6, 'sales outreach', 'pune', 250000, '2007-01-01');
+insert into Project values (7, 7, 'logistics upgrade', 'kolkata', 400000, '2004-01-01');
+insert into Project values (8, 8, 'new product r&d', 'ahmedabad', 350000, '2006-01-01');
+insert into Project values (9, 9, 'customer support', 'jaipur', 100000, '2005-01-01');
+insert into Project values (10, 10, 'office renovation', 'lucknow', 120000, '2004-01-01');
+
+-- Other Queries
+select * from Employee e where e.Dept_id in (select Dept_id from Dept where Dept_name in ('computer',
+'it')) and (e.Emp_fname like 'p%' or e.Emp_fname like 'h%');
+select distinct Emp_Position from Employee;
+update Employee set Emp_salary=1.1*Emp_salary where year(Emp_JoinDate)<1985;
+select * from Employee;
+select * from Dept where Dept_location="mumbai";
+select Proj_Name from Project where Proj_Location="pune";
+select Proj_Name from Project where (Proj_cost>=100000 and Proj_cost<=500000);
+select * from Project where Proj_cost=(select max(Proj_cost) from Project);
+select avg(Proj_cost) as avg_cost from Project;
+select Emp_id, Emp_fname,Emp_lname from Employee order by Emp_lname desc;
+select Proj_Name,Proj_Location,Proj_cost from Project where (year(Proj_date)=2004 or
+year(Proj_date)=2005 or year(Proj_date)=2007);
+
+-- Index Queries
+create unique index idx_salary on Employee(Emp_salary);
+select * from Employee where Emp_salary > 70000;
+create index idx_position on Employee(Emp_position);
+select * from Employee where Emp_position = 'database admin';
+create index idx_cost_location on Project(Proj_cost, Proj_Location);
+select Proj_Name from Project where Proj_cost > 300000 and Proj_Location = 'pune';
+
+-- View Query
+create view emp_salary_range AS
+select Emp_fname, Emp_lname, Emp_salary FROM Employee
+where Emp_salary BETWEEN 60000 AND 70000;
+SELECT * FROM emp_salary_range;
+
+-- Sequence/Auto-increment Query
+alter table Student MODIFY s_id INT AUTO_INCREMENT;
+
+-- Alias Query
+SELECT e.Emp_fname, e.Emp_lname FROM Employee e WHERE YEAR(e.Emp_JoinDate) = 1980;
