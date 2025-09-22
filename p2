@@ -1,0 +1,59 @@
+-- Q1-4: Setup database, tables, keys, and insert records
+CREATE DATABASE ASS_B1;
+USE ASS_B1;
+
+CREATE TABLE Dept(
+    deptId INT PRIMARY KEY,
+    deptName VARCHAR(10)
+);
+
+CREATE TABLE Emp(
+    empId INT PRIMARY KEY,
+    empName VARCHAR(50),
+    empSal DECIMAL(10, 2),
+    empDeptId INT,
+    FOREIGN KEY (empDeptId) REFERENCES Dept(deptId)
+);
+
+INSERT INTO Dept VALUES (10, 'IT');
+INSERT INTO Dept VALUES (20, 'HR');
+INSERT INTO Dept VALUES (30, 'Sales');
+INSERT INTO Dept VALUES (40, 'Market');
+
+INSERT INTO Emp VALUES (1, 'Arun', 25000, 10);
+INSERT INTO Emp VALUES (2, 'Bala', 18000, 20);
+INSERT INTO Emp VALUES (3, 'Charlie', 35000, 30);
+INSERT INTO Emp VALUES (4, 'David', 40000, 40);
+INSERT INTO Emp VALUES (5, 'Anjali', 22000, 10);
+
+-- Q5: Salary > 20000
+SELECT * FROM Emp WHERE empSal > 20000;
+
+-- Q6: List employees in ascending order of salary
+SELECT * FROM Emp ORDER BY empSal ASC;
+
+-- Q7: List employees in department 10, 30, or 40
+SELECT * FROM Emp WHERE empDeptId IN (10, 30, 40);
+
+-- Q8: Salary between 10000 and 30000
+SELECT * FROM Emp WHERE empSal BETWEEN 10000 AND 30000;
+
+-- Q9: Name starts with 'A' and salary > 20000
+SELECT * FROM Emp WHERE empName LIKE 'A%' AND empSal > 20000;
+
+-- Q10: List names of employees in 'Computer' department
+-- Assuming deptId 10 is 'Computer'
+INSERT INTO Dept VALUES(50, 'Computer');
+INSERT INTO Emp VALUES(6, 'Ganesh', 70000, 50);
+SELECT e.empName FROM Emp e JOIN Dept d ON e.empDeptId = d.deptId WHERE d.deptName = 'Computer';
+
+-- Q11: Change department name
+UPDATE Dept SET deptName = 'Computer Engineering' WHERE deptName = 'Computer';
+
+-- Q12: Aggregate functions for department 30
+SELECT SUM(empSal), MAX(empSal), MIN(empSal), AVG(empSal)
+FROM Emp
+WHERE empDeptId = 30;
+
+-- Q13: List average salary of each department
+SELECT empDeptId, AVG(empSal) FROM Emp GROUP BY empDeptId;

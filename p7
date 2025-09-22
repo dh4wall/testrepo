@@ -1,0 +1,105 @@
+-- Setup for Q7 in MySQL
+CREATE TABLE EMPLOYEE(
+    Emp_Id INT PRIMARY KEY,
+    First_Name VARCHAR(50),
+    Last_Name VARCHAR(50),
+    Email VARCHAR(50),
+    Phone_No VARCHAR(20),
+    Hire_Date DATE,
+    Job_Profile VARCHAR(50),
+    Salary DECIMAL(10, 2),
+    HRA DECIMAL(5, 2)
+);
+
+CREATE TABLE COMPANY_INFO(
+    Emp_Count INT,
+    Salary_Expenses DECIMAL(15, 2)
+);
+
+CREATE TABLE EMP_LOG(
+    -- Using AUTO_INCREMENT instead of a sequence
+    Log_Id INT PRIMARY KEY AUTO_INCREMENT,
+    Emp_Id INT,
+    Old_Salary DECIMAL(10, 2),
+    New_Salary DECIMAL(10, 2),
+    Edit_Time TIMESTAMP,
+    Job_Status VARCHAR(20)
+);
+
+-- Initialize the company info table
+INSERT INTO COMPANY_INFO VALUES (0, 0.00);
+
+-- Change the delimiter to allow for multi-statement triggers
+DELIMITER $$
+
+-- Before Insert Trigger
+CREATE TRIGGER before_employee_insert
+BEFORE INSERT ON EMPLOYEE
+FOR EACH ROW
+BEGIN
+    SET NEW.First_Name = TRIM(NEW.First_Name);
+    SET NEW.Last_Name = TRIM(NEW.Last_Name);
+    SET NEW.Job_Profile = UPPER(NEW.Job_Profile);
+END$$
+
+-- After Insert Trigger
+CREATE TRIGGER after_employee_insert
+AFTER INSERT ON EMPLOYEE
+FOR EACH ROW
+BEGIN
+    -- No need to specify Log_Id, AUTO_INCREMENT handles it
+    INSERT INTO EMP_LOG(Emp_Id, Old_Salary, New_Salary, Edit_Time, Job_Status)
+    VALUES(NEW.Emp_Id, NULL, NEW.Salary, NOW(), 'ACTIVE');
+
+    UPDATE COMPANY_INFO SET
+    Emp_Count = Emp_Count + 1,
+    Salary_Expenses = Salary_Expenses + NEW.Salary;
+END$$
+
+-- Before Update Trigger (for HRA)
+CREATE TRIGGER before_employee_hra_update
+BEFORE UPDATE ON EMPLOYEE
+FOR EACH ROW
+BEGIN
+    -- Check if HRA value is being changed
+    IF NEW.HRA <> OLD.HRA THEN
+        SET NEW.HRA = NEW.HRA / 100;
+    END IF;
+END$$
+
+-- After Update Trigger (for Salary)
+CREATE TRIGGER after_employee_update
+AFTER UPDATE ON EMPLOYEE
+FOR EACH ROW
+BEGIN
+    -- This trigger logs any change in the salary
+    IF NEW.Salary <> OLD.Salary THEN
+        INSERT INTO EMP_LOG(Emp_Id, Old_Salary, New_Salary, Edit_Time, Job_Status)
+        VALUES(OLD.Emp_Id, OLD.Salary, NEW.Salary, NOW(), 'UPDATED');
+
+        UPDATE COMPANY_INFO SET
+        Salary_Expenses = Salary_Expenses - OLD.Salary + NEW.Salary;
+    END IF;
+END$$
+
+-- Before Delete Trigger
+CREATE TRIGGER before_employee_delete
+BEFORE DELETE ON EMPLOYEE
+FOR EACH ROW
+BEGIN
+    INSERT INTO EMP_LOG(Emp_Id, Old_Salary, New_Salary, Edit_Time, Job_Status)
+    VALUES(OLD.Emp_Id, OLD.Salary, NULL, NOW(), 'DELETED');
+END$$
+
+-- After Delete Trigger
+CREATE TRIGGER after_employee_delete
+AFTER DELETE ON EMPLOYEE
+FOR EACH ROW
+BEGIN
+    UPDATE COMPANY_INFO SET
+    Emp_Count = Emp_Count - 1,
+    Salary_Expenses = Salary_Expenses - OLD.Salary;
+END$$
+
+-- Reset the delimiter back to the default
+DELIMITER ;

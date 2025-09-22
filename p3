@@ -1,0 +1,84 @@
+-- Q1: Setup tables and insert records
+CREATE TABLE Emp (
+    EmpId INT,
+    Emp_name VARCHAR(50),
+    City VARCHAR(50)
+);
+
+CREATE TABLE Emp_salary (
+    Emp_name VARCHAR(50),
+    Deptname VARCHAR(50),
+    Salary DECIMAL(10, 2)
+);
+
+CREATE TABLE Emp_Details(
+    EMPNO INT,
+    ENAME VARCHAR(50),
+    JOB VARCHAR(50),
+    HIREDATE DATE,
+    SAL DECIMAL(10, 2),
+    DEPTNO INT
+);
+
+INSERT INTO Emp VALUES (10, 'SMITH', 'Dallas');
+INSERT INTO Emp VALUES (11, 'JONES', 'Chicago');
+INSERT INTO Emp VALUES (12, 'FORD', 'New York');
+
+INSERT INTO Emp_salary VALUES ('SMITH', 'RESEARCH', 800);
+INSERT INTO Emp_salary VALUES ('JONES', 'ACCOUNTING', 2975);
+INSERT INTO Emp_salary VALUES ('FORD', 'ANALYST', 3000);
+
+INSERT INTO Emp_Details VALUES (7369, 'SMITH', 'CLERK', '1980-12-17', 800, 20);
+INSERT INTO Emp_Details VALUES (7566, 'JONES', 'MANAGER', '1981-04-02', 2975, 20);
+INSERT INTO Emp_Details VALUES (7788, 'SCOTT', 'ANALYST', '1987-04-19', 3000, 20);
+INSERT INTO Emp_Details VALUES (7902, 'FORD', 'ANALYST', '1981-12-03', 3000, 20);
+
+
+-- Q1: Joins
+-- Inner Join
+SELECT e.Emp_name, e.City, es.Deptname, es.Salary
+FROM Emp e
+INNER JOIN Emp_salary es ON e.Emp_name = es.Emp_name;
+
+-- Left Outer Join
+SELECT e.Emp_name, e.City, es.Deptname, es.Salary
+FROM Emp e
+LEFT JOIN Emp_salary es ON e.Emp_name = es.Emp_name;
+
+-- Right Outer Join
+SELECT e.Emp_name, e.City, es.Deptname, es.Salary
+FROM Emp e
+RIGHT JOIN Emp_salary es ON e.Emp_name = es.Emp_name;
+
+-- Q2: Create view EMP_SALARY1
+CREATE VIEW EMP_SALARY1 AS
+SELECT Emp_name, Deptname FROM Emp_salary;
+
+-- Q3: Display employees in Smith's department
+SELECT * FROM Emp_Details
+WHERE DEPTNO = (SELECT DEPTNO FROM Emp_Details WHERE ENAME = 'SMITH');
+
+-- Q4: Display salary of employee with salary > Ford's salary
+SELECT ENAME, SAL FROM Emp_Details
+WHERE SAL > (SELECT SAL FROM Emp_Details WHERE ENAME = 'FORD');
+
+-- Q5: Display records of employees senior to Jones
+SELECT * FROM Emp_Details
+WHERE HIREDATE < (SELECT HIREDATE FROM Emp_Details WHERE ENAME = 'JONES');
+
+-- Q6: Create view Emp_View
+CREATE VIEW Emp_View AS
+SELECT Emp_name, City FROM Emp;
+
+-- Q7: Update city in Emp_View
+-- (Assuming EmpId is in the Emp table for the update to work correctly)
+ALTER TABLE Emp ADD PRIMARY KEY (EmpId);
+UPDATE Emp_View SET City = 'Boston' WHERE EmpId = 10; -- This will fail as EmpId is not in the view.
+-- The correct way if EmpId was in the view:
+-- UPDATE Emp_View SET City = 'Boston' WHERE EmpId = 10;
+-- To make it work with the current view, you'd update based on name:
+UPDATE Emp SET City = 'Boston' WHERE Emp_name = 'SMITH';
+
+
+-- Q8: Display view Emp_View
+SELECT * FROM Emp_View;

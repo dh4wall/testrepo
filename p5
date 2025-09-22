@@ -1,0 +1,51 @@
+-- Setup for Q5 (uses tables from Q4)
+
+-- Function
+DELIMITER $$
+CREATE FUNCTION get_credit_score(p_cust_name VARCHAR(50))
+RETURNS INT
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE v_balance DECIMAL(10,2);
+    DECLARE v_loan_amount DECIMAL(10,2);
+    DECLARE v_score INT;
+    DECLARE ratio DECIMAL(10,4);
+
+    -- Get account balance
+    SELECT Balance INTO v_balance FROM Customer WHERE Cust_name = p_cust_name;
+
+    -- If customer not found, return 0
+    IF v_balance IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    -- Get total loan amount for the customer
+    SELECT SUM(l.Amount) INTO v_loan_amount
+    FROM Loan l
+    JOIN Borrower b ON l.Loan_no = b.Loan_no
+    WHERE b.Cust_name = p_cust_name;
+
+    -- If no loan exists, return the highest score
+    IF v_loan_amount IS NULL OR v_loan_amount = 0 THEN
+        RETURN 5;
+    END IF;
+
+    -- Calculate score based on loan to balance ratio
+    SET ratio = v_loan_amount / v_balance;
+
+    IF ratio < 0.25 THEN
+        SET v_score = 5;
+    ELSEIF ratio < 0.50 THEN
+        SET v_score = 4;
+    ELSEIF ratio < 0.75 THEN
+        SET v_score = 3;
+    ELSEIF ratio < 1.0 THEN
+        SET v_score = 2;
+    ELSE
+        SET v_score = 1;
+    END IF;
+
+    RETURN v_score;
+END$$
+DELIMITER ;

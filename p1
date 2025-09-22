@@ -1,0 +1,71 @@
+-- Q1: Create & use database
+CREATE DATABASE EMP_DETAILS;
+USE EMP_DETAILS;
+
+-- Q2: Create tables EMP and DEPT with keys
+CREATE TABLE DEPT (
+    deptId INT PRIMARY KEY,
+    deptName VARCHAR(20),
+    Location VARCHAR(20)
+);
+
+CREATE TABLE EMP (
+    empId INT PRIMARY KEY,
+    empName VARCHAR(50),
+    empSal DECIMAL(10, 2),
+    EmpDeptId INT,
+    FOREIGN KEY (EmpDeptId) REFERENCES DEPT(deptId)
+);
+
+-- Q3: Describe tables
+DESCRIBE EMP;
+DESCRIBE DEPT;
+
+-- Q4: Insert and display records
+INSERT INTO DEPT VALUES (10, 'IT', 'Pune');
+INSERT INTO DEPT VALUES (20, 'HR', 'Mumbai');
+INSERT INTO DEPT VALUES (30, 'Finance', 'Pune');
+
+INSERT INTO EMP VALUES (101, 'Rahul', 50000, 10);
+INSERT INTO EMP VALUES (102, 'Priya', 60000, 20);
+INSERT INTO EMP VALUES (103, 'Amit', 55000, 10);
+
+SELECT * FROM EMP;
+SELECT * FROM DEPT;
+
+-- Q5: Add column to EMP
+ALTER TABLE EMP ADD COLUMN emp_joining_date DATE;
+DESCRIBE EMP;
+
+-- Q6: Change datatype of column
+ALTER TABLE EMP MODIFY COLUMN empSal FLOAT;
+DESCRIBE EMP;
+
+-- Q7: Create view on DEPT
+CREATE VIEW DEPT_VIEW AS SELECT * FROM DEPT;
+SELECT * FROM DEPT_VIEW;
+
+-- Q8: Create view on EMP
+CREATE VIEW EMP_VIEW AS
+SELECT empId, empName, emp_joining_date FROM EMP;
+SELECT * FROM EMP_VIEW;
+
+-- Q9: Update view (This will update the base table EMP)
+UPDATE EMP_VIEW SET empId = 100 WHERE empName = 'ABC'; -- Assuming a user 'ABC' exists
+
+-- Q10: Create index on DEPT
+CREATE INDEX IND1 ON DEPT(deptName);
+SHOW INDEX FROM DEPT;
+
+-- Q11: Create composite index on EMP
+CREATE INDEX emp_name_sal_idx ON EMP(empName, empSal);
+SHOW INDEX FROM EMP;
+
+-- Q12: Drop view
+DROP VIEW emp_view;
+
+-- Q13: Rename table
+RENAME TABLE EMP TO Employee;
+
+-- Q14: Truncate table
+TRUNCATE TABLE Employee;
