@@ -1,0 +1,26 @@
+(AD,01) (C,100)
+(100) (IS,04) (RG,01) (S,0)
+(101) (IS,04) (RG,02) (S,1)
+(102) (IS,01) (RG,01) (L,0)
+(AD,05)
+(103) (DL,02) (C,3)
+(104) (IS,05) (RG,01) (L,1)
+(105) (DL,02) (C,10)
+(106) (DL,02) (C,15)
+(AD,02)
+(107) (DL,02) (C,2)
+
+=== SYMBOL TABLE ===
+Index	Name	Address
+0	X	105
+1	Y	106
+
+=== LITERAL TABLE ===
+Index	Name	Address
+0	='3'	103
+1	='2'	107
+
+=== POOL TABLE ===
+Pool#	StartIndex
+0	0
+1	1	
