@@ -1,0 +1,193 @@
+db.classes.drop()
+
+db.classes.insert({
+class : "Philosophy 101",
+startDate : new Date(2016, 1, 10),
+students : [
+{fName : "Dale", lName : "Cooper", age : 42},
+{fName : "Lucy", lName : "Moran", age : 35},
+{fName : "Tommy", lName : "Hill", age : 44}
+],
+cost : 1600,
+professor : "Paul Slugman",
+topics : "Socrates,Plato,Aristotle,Francis Bacon",
+book: {
+isbn: "1133612105",
+title: "Philosophy : A Text With Readings",
+price: 165.42
+}
+})
+
+db.classes.insert({
+class : "College Algebra",
+startDate : new Date(2016, 1, 11),
+students : [
+{fName : "Dale", lName : "Cooper", age : 42},
+{fName : "Laura", lName : "Palmer", age : 22},
+{fName : "Donna", lName : "Hayward", age : 21},
+{fName : "Shelly", lName : "Johnson", age : 24}
+],
+cost : 1500,
+professor : "Rhonda Smith",
+topics : "Rational Expressions,Linear Equations,Quadratic Equations",
+book: {
+isbn: "0321671791",
+title: "College Algebra",
+price: 179.40
+}
+})
+
+db.classes.insert({
+class : "Astronomy 101",
+startDate : new Date(2016, 1, 11),
+students : [
+{fName : "Bobby", lName : "Briggs", age : 21},
+{fName : "Laura", lName : "Palmer", age : 22},
+{fName : "Audrey", lName : "Horne", age : 20}
+],
+cost : 1650,
+professor : "Paul Slugman",
+topics : "Sun,Mercury,Venus,Earth,Moon,Mars",
+book: {
+isbn: "0321815351",
+title: "Astronomy: Beginning Guide to Univ",
+price: 129.45
+}
+})
+
+db.classes.insert({
+class : "Geology 101",
+startDate : new Date(2016, 1, 12),
+students : [
+{fName : "Andy", lName : "Brennan", age : 36},
+{fName : "Laura", lName : "Palmer", age : 22},
+{fName : "Audrey", lName : "Horne", age : 20}
+],
+cost : 1450,
+professor : "Alice Jones",
+topics : "Earth,Moon,Elements,Minerals",
+book: {
+isbn: "0321814061",
+title: "Earth : An Introduction to Physical Geology",
+price: 130.65
+}
+})
+
+db.classes.insert({
+class : "Biology 101",
+startDate : new Date(2016, 1, 11),
+students : [
+{fName : "Andy", lName : "Brennan", age : 36},
+{fName : "James", lName : "Hurley", age : 25},
+{fName : "Harry", lName : "Truman", age : 41}
+],
+cost : 1550,
+professor : "Alice Jones",
+topics : "Earth,Cell,Energy,Genetics,DNA",
+book: {
+isbn: "0547219474",
+title: "Holt McDougal Biology",
+price: 104.30
+}
+})
+
+db.classes.insert({
+class : "Chemistry 101",
+startDate : new Date(2016, 1, 13),
+students : [
+{fName : "Bobby", lName : "Briggs", age : 21},
+{fName : "Donna", lName : "Hayward", age : 21},
+{fName : "Audrey", lName : "Horne", age : 20},
+{fName : "James", lName : "Hurley", age : 25}
+],
+cost : 1600,
+professor : "Alice Jones",
+topics : "Matter,Energy,Atom,Periodic Table",
+book: {
+isbn: "0547219474",
+title: "Chemistry : Matter and Change",
+price: 104.30
+}
+})
+
+
+1. How many students enrolled for "Alice Jones" classes.
+JavaScript
+
+// 1. Map Function
+var map1 = function() {
+    if (this.professor === "Alice Jones") {
+        emit(this.professor, this.students.length);
+    }
+};
+
+// 2. Reduce Function
+var reduce1 = function(key, values) {
+    return Array.sum(values);
+};
+
+// 3. Run Map-Reduce
+db.classes.mapReduce(
+    map1,
+    reduce1,
+    { out: "alice_jones_students" }
+);
+
+// 4. See the result
+db.alice_jones_students.find();
+2. Find the total no. of students enrolled for each class.
+JavaScript
+
+// 1. Map Function
+var map2 = function() {
+    emit(this.class, this.students.length);
+};
+
+// 2. Reduce Function
+var reduce2 = function(key, values) {
+    // This sum is safe, even if there's only one value
+    return Array.sum(values);
+};
+
+// 3. Run Map-Reduce
+db.classes.mapReduce(
+    map2,
+    reduce2,
+    { out: "students_per_class" }
+);
+
+// 4. See the result
+db.students_per_class.find();
+3. Find total classes and total cost for each professor.
+JavaScript
+
+// 1. Map Function
+var map3 = function() {
+    var value = {
+        class_count: 1,
+        total_cost: this.cost
+    };
+    emit(this.professor, value);
+};
+
+// 2. Reduce Function
+var reduce3 = function(key, values) {
+    var result = { class_count: 0, total_cost: 0 };
+
+    values.forEach(function(v) {
+        result.class_count += v.class_count;
+        result.total_cost += v.total_cost;
+    });
+    
+    return result;
+};
+
+// 3. Run Map-Reduce
+db.classes.mapReduce(
+    map3,
+    reduce3,
+    { out: "professor_stats" }
+);
+
+// 4. See the result
+db.professor_stats.find();

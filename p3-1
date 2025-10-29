@@ -1,0 +1,201 @@
+DROP TABLE IF EXISTS `order`;
+DROP TABLE IF EXISTS Customer;
+DROP TABLE IF EXISTS book;
+DROP TABLE IF EXISTS publisher;
+DROP TABLE IF EXISTS author;
+
+CREATE TABLE author (
+    author_no INT PRIMARY KEY AUTO_INCREMENT,
+    author_name VARCHAR(100),
+    country VARCHAR(50)
+);
+
+CREATE TABLE publisher (
+    publisher_no INT PRIMARY KEY AUTO_INCREMENT,
+    publisher_name VARCHAR(100),
+    publisher_addr VARCHAR(200),
+    year INT
+);
+
+CREATE TABLE book (
+    ISBN VARCHAR(20) PRIMARY KEY,
+    title VARCHAR(255),
+    unit_price DECIMAL(10, 2),
+    author_no INT,
+    publisher_no INT,
+    pub_year INT,
+    FOREIGN KEY (author_no) REFERENCES author(author_no) ON DELETE CASCADE,
+    FOREIGN KEY (publisher_no) REFERENCES publisher(publisher_no) ON DELETE CASCADE
+);
+
+CREATE TABLE Customer (
+    cust_no INT PRIMARY KEY AUTO_INCREMENT,
+    cust_fname VARCHAR(50),
+    cust_lname VARCHAR(50),
+    cust_company VARCHAR(100),
+    cust_addr VARCHAR(200),
+    city VARCHAR(50),
+    cust_phone VARCHAR(20)
+);
+
+CREATE TABLE `order` (
+    order_no INT PRIMARY KEY AUTO_INCREMENT,
+    cust_no INT,
+    ISBN VARCHAR(20),
+    qty INT,
+    odate DATE,
+    FOREIGN KEY (cust_no) REFERENCES Customer(cust_no) ON DELETE CASCADE,
+    FOREIGN KEY (ISBN) REFERENCES book(ISBN) ON DELETE CASCADE
+);
+
+INSERT INTO author (author_name, country) VALUES
+('Author One', 'India'),
+('Author Two', 'USA'),
+('Author Three', 'Australia'),
+('Author Four', 'UK'),
+('Author Five', 'India');
+
+INSERT INTO publisher (publisher_name, publisher_addr, year) VALUES
+('Pub A', '123 Main St', 2010),
+('Pub B', '456 Oak St', 2015),
+('Pub C', '789 Pine St', 2016),
+('Pub D', '101 Maple St', 2000);
+
+INSERT INTO book (ISBN, title, unit_price, author_no, publisher_no, pub_year) VALUES
+('111-A', 'The SQL Guide', 299.99, 1, 1, 2015),
+('222-B', 'Data Structures', 349.50, 2, 2, 2016),
+('333-C', 'Advanced SQL', 499.00, 1, 3, 2015),
+('444-D', 'Aussie Tales', 320.00, 3, 1, 2000),
+('555-E', 'London Fog', 699.75, 4, 4, 2004),
+('666-F', 'Learning MySQL', 150.00, 5, 2, 2006);
+
+INSERT INTO Customer (cust_fname, cust_lname, cust_company, cust_addr, city, cust_phone) VALUES
+('Priya', 'Sharma', 'TCS', 'A-1, FC Road', 'Pune', '9811111111'),
+('Amit', 'Patel', 'Infosys', 'B-2, MG Road', 'Mumbai', '9822222222'),
+('Ravi', 'Kumar', 'Wipro', 'C-3, JM Road', 'Pune', '9833333333'),
+('Pooja', 'Singh', 'TCS', 'D-4, CP', 'Delhi', '9844444444'),
+('Hari', 'Mehta', 'Capgemini', 'E-5, Linkin Road', 'Mumbai', '9855555555'),
+('Sita', 'Reddy', 'CTS', 'F-6, T Nagar', 'Chennai', '9866666666'),
+('Gita', 'Verma', 'Infosys', 'G-7, SB Road', 'Pune', '9877777777'),
+('Harsh', 'Shah', 'Wipro', 'H-8, Marine Drive', 'Mumbai', '9888888888'),
+('Varun', 'Bose', 'Self', 'I-9, Brigade Road', 'Bangalore', '9899999999'),
+('Preeti', 'Nair', 'TCS', 'J-10, Kothrud', 'Pune', '9810101010');
+
+INSERT INTO `order` (cust_no, ISBN, qty, odate) VALUES
+(1, '111-A', 2, '2025-01-10'),
+(2, '222-B', 1, '2025-01-12'),
+(3, '333-C', 5, '2025-01-15'),
+(5, '444-D', 1, '2025-02-01'),
+(8, '111-A', 3, '2025-02-05');
+
+
+
+
+. Find Customer details and order details using NATURAL JOIN. (Requirement: Natural Join)
+
+SQL
+
+SELECT *
+FROM Customer
+NATURAL JOIN `order`;
+2. Find the book_ title, author_name, country. (Requirement: Inner Join / Equi Join)
+
+SQL
+
+SELECT b.title, a.author_name, a.country
+FROM book b
+JOIN author a ON b.author_no = a.author_no;
+3. Find the customer ID, name and order_no of customers who have never placed an order. (Requirement: Left Outer Join)
+
+SQL
+
+SELECT c.cust_no, c.cust_fname, c.cust_lname, o.order_no
+FROM Customer c
+LEFT JOIN `order` o ON c.cust_no = o.cust_no
+WHERE o.order_no IS NULL;
+4. Find the Title, ISBN, order_no of the books for which order is not placed. (Requirement: Right Outer Join) (This query finds books that have no matching order.)
+
+SQL
+
+SELECT b.title, b.ISBN, o.order_no
+FROM `order` o
+RIGHT JOIN book b ON o.ISBN = b.ISBN
+WHERE o.order_no IS NULL;
+5. Display cust_fname, title,author_no,pub_year where ISBN=111-A. (Requirement: Inner Join / Equi Join - on 3 tables) (Using ISBN '111-A' from sample data)
+
+SQL
+
+SELECT c.cust_fname, b.title, b.author_no, b.pub_year
+FROM Customer c
+JOIN `order` o ON c.cust_no = o.cust_no
+JOIN book b ON o.ISBN = b.ISBN
+WHERE b.ISBN = '111-A';
+6. Display the total number of books and customer name. (Requirement: Count+Join or Aggregate+Join) (This interprets "total number of books" as the total quantity ordered by each customer)
+
+SQL
+
+SELECT c.cust_fname, c.cust_lname, SUM(o.qty) AS total_quantity_ordered
+FROM Customer c
+JOIN `order` o ON c.cust_no = o.cust_no
+GROUP BY c.cust_no, c.cust_fname, c.cust_lname;
+7. List the cust_id, order_no and ISBN with books having title 'mysql'. (Requirement: Subquery) (Using LIKE for 'Learning MySQL' from sample data)
+
+SQL
+
+SELECT o.cust_no, o.order_no, o.ISBN
+FROM `order` o
+WHERE o.ISBN IN (
+    SELECT b.ISBN
+    FROM book b
+    WHERE b.title LIKE '%MySQL%'
+);
+8. Find the names of all the companies that ordered books in the year 2015. (Requirement: Subquery) (Using 2025 to match sample data's order dates)
+
+SQL
+
+SELECT DISTINCT c.cust_company
+FROM Customer c
+WHERE c.cust_no IN (
+    SELECT o.cust_no
+    FROM `order` o
+    WHERE YEAR(o.odate) = 2025
+);
+9. Create view showing the author and book details. (Requirement: Complex View) (A view based on a join is a complex view)
+
+SQL
+
+CREATE VIEW BookAuthorDetails AS
+SELECT b.title, b.ISBN, b.unit_price, a.author_name, a.country
+FROM book b
+JOIN author a ON b.author_no = a.author_no;
+
+-- To see the view:
+SELECT * FROM BookAuthorDetails;
+10. Perform Manipulation on simple view-Insert, update, delete, drop view. (Requirement: Simple View + Manipulation) (A simple view is based on one table. DML operations are possible.)
+
+SQL
+
+-- First, create a simple view
+CREATE VIEW IndianAuthors AS
+SELECT author_no, author_name, country
+FROM author
+WHERE country = 'India';
+
+-- 1. INSERT (Inserts into the base 'author' table)
+INSERT INTO IndianAuthors (author_name, country)
+VALUES ('New Author', 'India');
+
+-- 2. UPDATE (Updates the base 'author' table)
+UPDATE IndianAuthors
+SET author_name = 'Updated Name'
+WHERE author_name = 'Author One';
+
+-- 3. DELETE (Deletes from the base 'author' table)
+DELETE FROM IndianAuthors
+WHERE author_name = 'Author Five';
+
+-- 4. DROP the view
+DROP VIEW IF EXISTS IndianAuthors;
+
+-- Also drop the complex view from Q9
+DROP VIEW IF EXISTS BookAuthorDetails;

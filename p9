@@ -1,0 +1,190 @@
+db.createCollection("teachers")
+
+1. Create Collection and Insert Documents
+JavaScript
+
+db.teachers.insertMany([
+  {
+    name: "Dr. A. Sharma",
+    qualifications: ["Ph.D.", "M.Tech"],
+    deptno: 1,
+    deptname: "computer",
+    designation: "Professor",
+    experience: { industry: 5, teaching: 12, total: 17 },
+    salary: { basic: 90000, TA: 5000, DA: 4000, HRA: 18000 },
+    date_of_joining: ISODate("2007-07-01T00:00:00Z"),
+    appointement_nature: "permanent",
+    area_of_expertise: ["Machine Learning", "AI"]
+  },
+  {
+    name: "Prof. B. Verma",
+    qualifications: ["M.Tech"],
+    deptno: 1,
+    deptname: "computer",
+    designation: "Asst. Professor",
+    experience: { industry: 2, teaching: 8, total: 10 },
+    salary: { basic: 75000, TA: 3000, DA: 3000, HRA: 15000 },
+    date_of_joining: ISODate("2015-08-20T00:00:00Z"),
+    appointement_nature: "permanent",
+    area_of_expertise: ["Database Systems", "Data Mining"]
+  },
+  {
+    name: "Prof. C. D'Souza",
+    qualifications: ["M.E."],
+    deptno: 2,
+    deptname: "IT",
+    designation: "Asst. Professor",
+    experience: { industry: 7, teaching: 5, total: 12 },
+    salary: { basic: 80000, TA: 3500, DA: 3500, HRA: 16000 },
+    date_of_joining: ISODate("2018-01-10T00:00:00Z"),
+    appointement_nature: "permanent",
+    area_of_expertise: ["Cloud Computing"]
+  },
+  {
+    name: "Dr. E. Francis",
+    qualifications: ["Ph.D.", "M.Sc"],
+    deptno: 3,
+    deptname: "E&TC",
+    designation: "Professor",
+    experience: { industry: 10, teaching: 15, total: 25 },
+    salary: { basic: 110000, TA: 6000, DA: 5000, HRA: 22000 },
+    date_of_joining: ISODate("2002-05-15T00:00:00Z"),
+    appointement_nature: "permanent",
+    area_of_expertise: ["VLSI", "Embedded Systems"]
+  },
+  {
+    name: "Prof. F. Khan",
+    qualifications: ["M.Sc"],
+    deptno: 4,
+    deptname: "first year",
+    designation: "Asst. Professor",
+    experience: { industry: 1, teaching: 4, total: 5 },
+    salary: { basic: 60000, TA: 2500, DA: 2500, HRA: 12000 },
+    date_of_joining: ISODate("2020-07-30T00:00:00Z"),
+    appointement_nature: "permanent",
+    area_of_expertise: ["Physics"]
+  },
+  {
+    name: "Prof. G. Iyer",
+    qualifications: ["M.Tech"],
+    deptno: 1,
+    deptname: "computer",
+    designation: "Visiting Faculty",
+    experience: { industry: 3, teaching: 2, total: 5 },
+    salary: { basic: 50000, TA: 1500, DA: 1500, HRA: 10000 },
+    date_of_joining: ISODate("2022-08-01T00:00:00Z"),
+    appointement_nature: "adhoc",
+    area_of_expertise: ["Web Development"]
+  }
+])
+
+
+2. Find all teachers
+JavaScript
+
+db.teachers.find()
+
+
+3. Find all teachers of computer department
+JavaScript
+
+db.teachers.find({ deptname: "computer" })
+
+
+4. Find all teachers of computer, IT & first year departments
+JavaScript
+
+db.teachers.find({ deptname: { $in: ["computer", "IT", "first year"] } })
+
+
+
+5. Find teachers of computer, IT and E&TC with salary [70k, 100k]
+(This query checks the salary.basic field)
+
+JavaScript
+
+db.teachers.find({
+  deptname: { $in: ["computer", "IT", "E&TC"] },
+  "salary.basic": { $gte: 70000, $lte: 100000 }
+})
+
+
+
+6. Update experience (with upsert)
+(This will update "Prof. C. D'Souza" or insert them if they don't exist)
+
+JavaScript
+
+db.teachers.updateOne(
+  { name: "Prof. C. D'Souza" },
+  { $set: { "experience.total": 10, "experience.teaching": 3 } },
+  { upsert: true }
+)
+7. Find teachers' name and experience (descending)
+JavaScript
+
+db.teachers.find(
+  {}, // filter
+  { name: 1, experience: 1, _id: 0 } // projection
+).sort(
+  { "experience.total": -1 }
+)
+
+
+
+8. Use save() method to insert one entry
+(save() is deprecated. insertOne() is preferred, but save() will work for insertion if the _id does not exist.)
+
+JavaScript
+
+db.teachers.save({
+  name: "Prof. H. Patel",
+  qualifications: ["B.E."],
+  deptno: 2,
+  deptname: "IT",
+  designation: "Lab Assistant",
+  experience: { industry: 4, teaching: 0, total: 4 },
+  salary: { basic: 40000, TA: 1000, DA: 1000, HRA: 8000 },
+  date_of_joining: ISODate("2023-01-15T00:00:00Z"),
+  appointement_nature: "adhoc",
+  area_of_expertise: ["Networking"]
+})
+
+
+
+9. Use update() to change designation for exp >= 10
+(update() is deprecated. updateMany() is the modern equivalent.)
+
+JavaScript
+
+db.teachers.updateMany(
+  { "experience.total": { $gte: 10 } },
+  { $set: { designation: "Professor" } }
+)
+
+
+10. Use save() method to change designation
+(save() is deprecated. updateOne() is preferred. This method requires fetching the document, modifying it, and then saving it back.)
+
+JavaScript
+
+// Step 1: Find and store the document
+var t = db.teachers.findOne({ name: "Prof. F. Khan" })
+
+// Step 2: Modify the document in the variable
+t.designation = "Professor"
+
+// Step 3: Save the modified document
+db.teachers.save(t)
+
+
+11. Delete documents with appointment_nature "adhoc"
+JavaScript
+
+db.teachers.deleteMany({ appointement_nature: "adhoc" })
+
+
+12. Display first 3 documents (ascending exp) with pretty()
+JavaScript
+
+db.teachers.find().sort({ "experience.total": 1 }).limit(3).pretty()

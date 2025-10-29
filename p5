@@ -1,51 +1,127 @@
--- Setup for Q5 (uses tables from Q4)
+DROP TABLE IF EXISTS Borrower;
+DROP TABLE IF EXISTS Loan;
+DROP TABLE IF EXISTS Customer;
 
--- Function
+CREATE TABLE Customer (
+    Cust_name VARCHAR(100) PRIMARY KEY,
+    AccNo VARCHAR(20) UNIQUE,
+    Balance DECIMAL(10, 2),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Loan (
+    Loan_no VARCHAR(20) PRIMARY KEY,
+    branch_name VARCHAR(50),
+    Amount DECIMAL(10, 2)
+);
+
+CREATE TABLE Borrower (
+    Cust_name VARCHAR(100),
+    Loan_no VARCHAR(20),
+    PRIMARY KEY (Cust_name, Loan_no),
+    FOREIGN KEY (Cust_name) REFERENCES Customer(Cust_name) ON DELETE CASCADE,
+    FOREIGN KEY (Loan_no) REFERENCES Loan(Loan_no) ON DELETE CASCADE
+);
+
+
+INSERT INTO Customer (Cust_name, AccNo, Balance, city) VALUES
+('Amit', 'A101', 100000.00, 'Mumbai'), 
+('Bina', 'A102', 200000.00, 'Delhi'),  
+('Chirag', 'A103', 80000.00, 'Pune'),   
+('Dipti', 'A104', 50000.00, 'Mumbai'),  
+('Esha', 'A105', 10000.00, 'Pune');    
+
+INSERT INTO Loan (Loan_no, branch_name, Amount) VALUES
+('L201', 'Main Branch', 50000.00),
+('L202', 'Delhi Branch', 20000.00),
+('L203', 'Pune Branch', 60000.00),
+('L204', 'Main Branch', 10000.00);
+
+INSERT INTO Borrower (Cust_name, Loan_no) VALUES
+('Amit', 'L201'),
+('Bina', 'L202'),
+('Dipti', 'L203'),
+('Esha', 'L204');
+
+DROP FUNCTION IF EXISTS CalculateCreditScore;
+
 DELIMITER $$
-CREATE FUNCTION get_credit_score(p_cust_name VARCHAR(50))
+CREATE FUNCTION CalculateCreditScore(
+    b1 DECIMAL(10, 2),
+    l1 DECIMAL(10, 2)
+)
 RETURNS INT
 DETERMINISTIC
-READS SQL DATA
 BEGIN
-    DECLARE v_balance DECIMAL(10,2);
-    DECLARE v_loan_amount DECIMAL(10,2);
-    DECLARE v_score INT;
-    DECLARE ratio DECIMAL(10,4);
+    DECLARE r1 DECIMAL(10, 4);
+    DECLARE s1 INT;
 
-    -- Get account balance
-    SELECT Balance INTO v_balance FROM Customer WHERE Cust_name = p_cust_name;
-
-    -- If customer not found, return 0
-    IF v_balance IS NULL THEN
+    IF l1 IS NULL OR l1 = 0 THEN
+        RETURN 5;
+    END IF;
+    IF b1 IS NULL OR b1 = 0 THEN
         RETURN 0;
     END IF;
 
-    -- Get total loan amount for the customer
-    SELECT SUM(l.Amount) INTO v_loan_amount
-    FROM Loan l
-    JOIN Borrower b ON l.Loan_no = b.Loan_no
-    WHERE b.Cust_name = p_cust_name;
+    SET r1 = l1 / b1;
 
-    -- If no loan exists, return the highest score
-    IF v_loan_amount IS NULL OR v_loan_amount = 0 THEN
-        RETURN 5;
-    END IF;
-
-    -- Calculate score based on loan to balance ratio
-    SET ratio = v_loan_amount / v_balance;
-
-    IF ratio < 0.25 THEN
-        SET v_score = 5;
-    ELSEIF ratio < 0.50 THEN
-        SET v_score = 4;
-    ELSEIF ratio < 0.75 THEN
-        SET v_score = 3;
-    ELSEIF ratio < 1.0 THEN
-        SET v_score = 2;
+    IF r1 <= 0.25 THEN
+        SET s1 = 4;
+    ELSEIF r1 <= 0.50 THEN
+        SET s1 = 3;
+    ELSEIF r1 <= 0.75 THEN
+        SET s1 = 2;
+    ELSEIF r1 <= 1.0 THEN
+        SET s1 = 1;
     ELSE
-        SET v_score = 1;
+        SET s1 = 0;
     END IF;
 
-    RETURN v_score;
+    RETURN s1;
 END$$
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS PrintCustomerCreditScore;
+
+DELIMITER $$
+
+CREATE PROCEDURE PrintCustomerCreditScore(
+    IN cn VARCHAR(100)
+)
+BEGIN
+    DECLARE b2 DECIMAL(10, 2);
+    DECLARE l2 DECIMAL(10, 2);
+    DECLARE s2 INT;
+    DECLARE ex INT DEFAULT 0;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+    END;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SELECT 'An unexpected SQL error occurred' AS ErrorMessage;
+    END;
+
+    SELECT Balance, 1 INTO b2, ex
+    FROM Customer
+    WHERE Cust_name = cn;
+
+    IF ex = 0 THEN
+        SELECT 'Error: Customer not found' AS Result;
+    ELSE
+        SELECT COALESCE(SUM(l.Amount), 0) INTO l2
+        FROM Borrower b
+        JOIN Loan l ON b.Loan_no = l.Loan_no
+        WHERE b.Cust_name = cn;
+
+        SET s2 = CalculateCreditScore(b2, l2);
+
+        SELECT cn AS Customer, s2 AS CreditScore;
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+CALL PrintCustomerCreditScore('Amit');

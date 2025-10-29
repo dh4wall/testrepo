@@ -1,59 +1,170 @@
--- Q1-4: Setup database, tables, keys, and insert records
-CREATE DATABASE ASS_B1;
-USE ASS_B1;
-
-CREATE TABLE Dept(
-    deptId INT PRIMARY KEY,
-    deptName VARCHAR(10)
+-- Create parent table Departments
+CREATE TABLE Departments (
+    dept_id INT PRIMARY KEY AUTO_INCREMENT,
+    dept_name VARCHAR(100)
 );
 
-CREATE TABLE Emp(
-    empId INT PRIMARY KEY,
-    empName VARCHAR(50),
-    empSal DECIMAL(10, 2),
-    empDeptId INT,
-    FOREIGN KEY (empDeptId) REFERENCES Dept(deptId)
+-- Create table Professors
+-- AUTO_INCREMENT on prof_id acts as a sequence
+CREATE TABLE Professors (
+    prof_id INT PRIMARY KEY AUTO_INCREMENT,
+    prof_fname VARCHAR(50),
+    prof_lname VARCHAR(50),
+    dept_id INT,
+    designation VARCHAR(50),
+    salary DECIMAL(10, 2),
+    doj DATE,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    city VARCHAR(50),
+    FOREIGN KEY (dept_id) REFERENCES Departments(dept_id) ON DELETE CASCADE
 );
 
-INSERT INTO Dept VALUES (10, 'IT');
-INSERT INTO Dept VALUES (20, 'HR');
-INSERT INTO Dept VALUES (30, 'Sales');
-INSERT INTO Dept VALUES (40, 'Market');
+-- Create table works
+CREATE TABLE works (
+    prof_id INT,
+    dept_id INT,
+    duration INT,
+    PRIMARY KEY (prof_id, dept_id),
+    FOREIGN KEY (prof_id) REFERENCES Professors(prof_id) ON DELETE CASCADE,
+    FOREIGN KEY (dept_id) REFERENCES Departments(dept_id) ON DELETE CASCADE
+);
 
-INSERT INTO Emp VALUES (1, 'Arun', 25000, 10);
-INSERT INTO Emp VALUES (2, 'Bala', 18000, 20);
-INSERT INTO Emp VALUES (3, 'Charlie', 35000, 30);
-INSERT INTO Emp VALUES (4, 'David', 40000, 40);
-INSERT INTO Emp VALUES (5, 'Anjali', 22000, 10);
+-- Create table Shift
+CREATE TABLE Shift (
+    prof_id INT PRIMARY KEY,
+    shift VARCHAR(20),
+    working_hours INT,
+    FOREIGN KEY (prof_id) REFERENCES Professors(prof_id) ON DELETE CASCADE
+);
 
--- Q5: Salary > 20000
-SELECT * FROM Emp WHERE empSal > 20000;
+-- Create View
+CREATE VIEW ProfDeptView AS
+SELECT p.prof_fname, p.prof_lname, d.dept_name
+FROM Professors p
+JOIN Departments d ON p.dept_id = d.dept_id;
 
--- Q6: List employees in ascending order of salary
-SELECT * FROM Emp ORDER BY empSal ASC;
+-- Create Index
+CREATE INDEX idx_prof_city ON Professors(city);
 
--- Q7: List employees in department 10, 30, or 40
-SELECT * FROM Emp WHERE empDeptId IN (10, 30, 40);
+-- Create Synonym (using a VIEW in MySQL)
+CREATE VIEW PROF AS
+SELECT * FROM Professors;
 
--- Q8: Salary between 10000 and 30000
-SELECT * FROM Emp WHERE empSal BETWEEN 10000 AND 30000;
 
--- Q9: Name starts with 'A' and salary > 20000
-SELECT * FROM Emp WHERE empName LIKE 'A%' AND empSal > 20000;
 
--- Q10: List names of employees in 'Computer' department
--- Assuming deptId 10 is 'Computer'
-INSERT INTO Dept VALUES(50, 'Computer');
-INSERT INTO Emp VALUES(6, 'Ganesh', 70000, 50);
-SELECT e.empName FROM Emp e JOIN Dept d ON e.empDeptId = d.deptId WHERE d.deptName = 'Computer';
+-- Insert into parent table Departments
+INSERT INTO Departments (dept_name) VALUES
+('Computer'),
+('IT'),
+('E&TC');
 
--- Q11: Change department name
-UPDATE Dept SET deptName = 'Computer Engineering' WHERE deptName = 'Computer';
+-- Insert 10 Professor records
+INSERT INTO Professors (prof_fname, prof_lname, dept_id, designation, salary, doj, email, phone, city) VALUES
+('Ajay', 'Shah', 1, 'Professor', 50000, '2015-01-01', 'ajay@p.com', '9111111111', 'Pune'),
+('Vijay', 'Patil', 2, 'Asst. Prof', 30000, '2017-06-15', 'vijay@p.com', '9222222222', 'Mumbai'),
+('Deepa', 'Mehta', 1, 'Professor', 55000, '2015-08-01', 'deepa@p.com', '9333333333', 'Mumbai'),
+('Sunil', 'Kulkarni', 3, 'HOD', 70000, '2012-03-10', 'sunil@p.com', '9444444444', 'Pune'),
+('Anil', 'Jain', 2, 'Asst. Prof', 32000, '2018-07-20', 'anil@p.com', '9555555555', 'Delhi'),
+('David', 'Warner', 1, 'Assoc. Prof', 40000, '2015-11-05', 'david@p.com', '9666666666', 'Pune'),
+('Riya', 'Sen', 3, 'Professor', 48000, '2019-02-18', 'riya@p.com', '9777777777', 'Chennai'),
+('Karan', 'Verma', 2, 'Asst. Prof', 15000, '2016-01-01', 'karan@p.com', '9888888888', 'Mumbai'),
+('Priya', 'Rane', 1, 'Asst. Prof', 18000, '2020-05-30', 'priya@p.com', '9999999999', 'Pune'),
+('Amit', 'Desai', 3, 'Assoc. Prof', 42000, '2015-01-01', 'amit@p.com', '9000000000', 'Delhi');
 
--- Q12: Aggregate functions for department 30
-SELECT SUM(empSal), MAX(empSal), MIN(empSal), AVG(empSal)
-FROM Emp
-WHERE empDeptId = 30;
+-- Insert into works
+INSERT INTO works (prof_id, dept_id, duration) VALUES
+(1, 1, 10),
+(2, 2, 8),
+(3, 1, 9),
+(4, 3, 13),
+(5, 2, 7),
+(6, 1, 9),
+(7, 3, 6),
+(8, 2, 9),
+(9, 1, 5),
+(10, 3, 10);
 
--- Q13: List average salary of each department
-SELECT empDeptId, AVG(empSal) FROM Emp GROUP BY empDeptId;
+-- Insert into Shift
+INSERT INTO Shift (prof_id, shift, working_hours) VALUES
+(1, 'Morning', 8),
+(2, 'Afternoon', 8),
+(3, 'Morning', 8),
+(4, 'General', 9),
+(5, 'Afternoon', 8),
+(6, 'Morning', 8),
+(7, 'Afternoon', 8),
+(8, 'Morning', 8),
+(9, 'Afternoon', 8),
+(10, 'General', 9);
+
+
+2. Display all professors details with city pune and mumbai and professor first name starting with 'a' or 'd'.
+
+SQL
+
+SELECT * FROM Professors
+WHERE (city = 'Pune' OR city = 'Mumbai')
+AND (prof_fname LIKE 'A%' OR prof_fname LIKE 'D%');
+3. list the number of different cities of professors.(use of distinct)
+
+SQL
+
+SELECT COUNT(DISTINCT city) AS unique_city_count
+FROM Professors;
+4. Give 5% increase in salary of the professors with date of joining 1-1-2015.
+
+SQL
+
+UPDATE Professors
+SET salary = salary * 1.05
+WHERE doj = '2015-01-01';
+5. Delete professor details living in pune.
+
+SQL
+
+DELETE FROM Professors
+WHERE city = 'Pune';
+6. Find the names of professors belonging to pune or mumbai
+
+SQL
+
+SELECT prof_fname, prof_lname
+FROM Professors
+WHERE city = 'Pune' OR city = 'Mumbai';
+7. Find the professors who joined between 1-1-2015 and 1-1-2016
+
+SQL
+
+SELECT prof_fname, prof_lname, doj
+FROM Professors
+WHERE doj BETWEEN '2015-01-01' AND '2016-01-01';
+8. Find the professor having maximum salary and names of professors having salary between 10,000 and 20,000.
+
+SQL
+
+-- Professor with maximum salary
+SELECT prof_fname, prof_lname, salary
+FROM Professors
+WHERE salary = (SELECT MAX(salary) FROM Professors);
+
+-- Professors with salary between 10,000 and 20,000
+SELECT prof_fname, prof_lname, salary
+FROM Professors
+WHERE salary BETWEEN 10000 AND 20000;
+9. Display all professors name with salary and date of joining with decreasing order of salary.
+
+SQL
+
+SELECT prof_fname, prof_lname, salary, doj
+FROM Professors
+ORDER BY salary DESC;
+Setting prof_id as the PRIMARY KEY in the Shift table implies that each professor can only be assigned one shift in this table.
+
+10. Display professors name, date of joining and dept_id with salary 30000, 40000 and 50000
+
+SQL
+
+SELECT prof_fname, prof_lname, doj, dept_id
+FROM Professors
+WHERE salary IN (30000, 40000, 50000);
