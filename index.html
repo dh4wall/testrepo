@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IronEdge Chat</title>
+    <style>
+        body { font-family: sans-serif; background: #faeded; display: flex; flex-direction: column; align-items: center; padding: 50px 20px; }
+        
+        .logo { font-size: 24px; font-weight: bold; letter-spacing: -1px; margin-bottom: 30px; }
+        .logo span { color: #ff3e3e; }
+
+        #chat-box {
+            width: 100%; max-width: 400px; height: 500px;
+            background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        
+        .msg { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; max-width: 85%; }
+        .bot { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .user { background: #333; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        .input-area { display: flex; padding: 15px; border-top: 1px solid #eee; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+        button { background: #ff3e3e; color: white; border: none; padding: 0 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="logo">IRON<span>EDGE</span> GYM</div>
+
+    <div id="chat-box">
+        <div id="messages">
+            <div class="msg bot">Hello! I can help with pricing, location, or hours. What's on your mind?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+            <button onclick="send()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const msgContainer = document.getElementById('messages');
+        const input = document.getElementById('user-input');
+
+        const DATA = [
+            { keys: ['price', 'cost', 'membership', 'plan', 'fee'], text: "Memberships start at ₹1,499/mo. We also have Pro and Elite plans." },
+            { keys: ['location', 'where', 'address', 'place'], text: "We are located in Koregaon Park, Pune, right behind the main station." },
+            { keys: ['hour', 'time', 'open', 'close', 'schedule'], text: "We are open 24/7! Trainers are available from 6 AM to 10 PM." }
+        ];
+
+        function addMsg(text, type) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            div.innerText = text;
+            msgContainer.appendChild(div);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        function send() {
+            const val = input.value.trim().toLowerCase();
+            if (!val) return;
+
+            addMsg(input.value, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                const match = DATA.find(item => item.keys.some(key => val.includes(key)));
+                
+                if (match) {
+                    addMsg(match.text, 'bot');
+                } else {
+                    addMsg("I'm sorry, I only handle gym-related inquiries regarding pricing, location, and hours.", 'bot');
+                }
+            }, 600);
+        }
+
+        input.addEventListener('keypress', (e) => { if(e.key === 'Enter') send(); });
+    </script>
+
+</body>
+</html>
