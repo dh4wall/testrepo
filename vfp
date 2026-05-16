@@ -1,0 +1,70 @@
+public class sc {
+    public Student__c s{get;set;}
+    public List<Student__c> li{get;set;}
+    public String id{get;set;}
+	
+    public sc(){
+        s=new Student__c();
+        li=[select Id,Name,roll__c, class__c, mob__c from Student__c];
+    }    
+    
+    public void addstud(){
+        try{
+            upsert s;
+            s=new Student__c();
+            li=[select Id, Name, roll__c,class__c, mob__c from Student__c];
+            
+        }catch(DmlException e){
+            ApexPages.addMessages(e);
+        }
+    }
+    
+    public void editstudent(){
+        s=[select Id,Name,roll__c, class__c,mob__c from Student__c where Id=:id limit 1];
+    }
+    
+    public void deletestudent(){
+        Student__c st=[select Id from Student__c where Id=:id limit 1];
+        delete st;
+        li=[select Id, Name, roll__c, class__c, mob__c from Student__c];
+    }
+    
+
+}
+
+<apex:page controller="sc" lightningStylesheets="true">
+    <apex:form id="mf">
+    	<apex:pageMessages ></apex:pageMessages>
+    	<apex:pageBlock title="form">
+        	<apex:pageBlockSection columns="2">
+            	<apex:inputField value="{!s.roll__c}" label="roll no" />
+                <apex:inputField value="{!s.class__c}" label="class" />
+                <apex:inputField value="{!s.mob__c}" label="mobile no" />
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons location="bottom">
+            	<apex:commandButton action="{!addstud}" value="add" reRender="mf" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        
+        
+        <apex:actionRegion >
+        <apex:pageBlock >
+        	<apex:pageBlockTable value="{!li}" var="s1"  >
+                <apex:column headerValue="actions" >
+                    <apex:commandLink action="{!editstudent}" value="edit" reRender="mf">
+                    	<apex:param assignTo="{!id}" value="{!s1.Id}" name="edit" />
+                    </apex:commandLink>
+                    
+                    <apex:commandLink action="{!deletestudent}" value="del" reRender="mf">
+                    	<apex:param assignTo="{!id}" value="{!s1.Id}" name="del" />
+                    </apex:commandLink>
+                </apex:column>
+                
+                <apex:column value="{!s1.roll__c}" />
+                <apex:column value="{!s1.class__c}" />
+                <apex:column value="{!s1.mob__c}" />
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    	</apex:actionRegion>
+    </apex:form>
+</apex:page>
